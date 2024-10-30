@@ -75,6 +75,18 @@ NSObject <FlutterPluginRegistrar> *_fluwxRegistrar;
     FluwxPlugin *instance = [[FluwxPlugin alloc] initWithChannel:channel];
     [registrar addApplicationDelegate:instance];
     [registrar addMethodCallDelegate:instance channel:channel];
+    [instance addObserverUserActivityDidContinue];
+}
+
+- (void)addObserverUserActivityDidContinue {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleUserActivityDidContinue:) name:@"SceneUserActivityDidContinue" object:nil];
+}
+
+- (void)handleUserActivityDidContinue: (NSNotification *)notification {
+    if ([notification.object isKindOfClass:[NSUserActivity class]]) {
+        NSUserActivity *userActivity = (NSUserActivity*) [notification object];
+        [WXApi handleOpenUniversalLink:userActivity delegate:self];
+    }
 }
 
 - (instancetype)initWithChannel:(FlutterMethodChannel *)channel {
