@@ -549,7 +549,7 @@ NSObject <FlutterPluginRegistrar> *_fluwxRegistrar;
     FlutterStandardTypedData *flutterThumbData = call.arguments[fluwxKeyThumbData];
     NSData *thumbData = nil;
     if (![flutterThumbData isKindOfClass:[NSNull class]]) {
-        thumbData = flutterThumbData.data;
+        thumbData = [self getThumbnailDataFromNSData:flutterThumbData.data size:65536 compress:YES];
     }
     
     dispatch_queue_t globalQueue = dispatch_get_global_queue(0, 0);
@@ -581,7 +581,7 @@ NSObject <FlutterPluginRegistrar> *_fluwxRegistrar;
     FlutterStandardTypedData *flutterThumbData = call.arguments[fluwxKeyThumbData];
     NSData *thumbData = nil;
     if (![flutterThumbData isKindOfClass:[NSNull class]]) {
-        thumbData = flutterThumbData.data;
+        thumbData = [self getThumbnailDataFromNSData:flutterThumbData.data size:65536 compress:YES];
     }
     
     dispatch_queue_t globalQueue = dispatch_get_global_queue(0, 0);
