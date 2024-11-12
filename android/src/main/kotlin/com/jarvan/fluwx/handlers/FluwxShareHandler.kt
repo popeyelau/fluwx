@@ -95,6 +95,7 @@ internal interface FluwxShareHandler : CoroutineScope {
 
         launch {
             val req = SendMessageToWX.Req()
+            msg.thumbData = readThumbnailByteArray(call, length = SHARE_MINI_PROGRAM_THUMB_LENGTH)
             setCommonArguments(call, req, msg)
             req.message = msg
             sendRequestInMain(result, req)
@@ -156,6 +157,7 @@ internal interface FluwxShareHandler : CoroutineScope {
             msg.description = call.argument(keyDescription)
 
             val req = SendMessageToWX.Req()
+            msg.thumbData = readThumbnailByteArray(call)
             setCommonArguments(call, req, msg)
             req.message = msg
 
@@ -181,6 +183,7 @@ internal interface FluwxShareHandler : CoroutineScope {
 
         launch {
             val req = SendMessageToWX.Req()
+            msg.thumbData = readThumbnailByteArray(call)
             setCommonArguments(call, req, msg)
             req.message = msg
             sendRequestInMain(result, req)
@@ -202,6 +205,7 @@ internal interface FluwxShareHandler : CoroutineScope {
 
         launch {
             val req = SendMessageToWX.Req()
+            msg.thumbData = readThumbnailByteArray(call)
             setCommonArguments(call, req, msg)
             req.message = msg
 
@@ -219,6 +223,7 @@ internal interface FluwxShareHandler : CoroutineScope {
 
         launch {
             val req = SendMessageToWX.Req()
+            msg.thumbData = readThumbnailByteArray(call)
             setCommonArguments(call, req, msg)
             req.message = msg
             sendRequestInMain(result, req)
@@ -260,9 +265,24 @@ internal interface FluwxShareHandler : CoroutineScope {
             }
 
             val req = SendMessageToWX.Req()
+            msg.thumbData = readThumbnailByteArray(call)
             setCommonArguments(call, req, msg)
             req.message = msg
             sendRequestInMain(result, req)
+        }
+    }
+
+    private suspend fun readThumbnailByteArray(call: MethodCall, length: Int = SHARE_IMAGE_THUMB_LENGTH): ByteArray? {
+        val thumbnailMap: Map<String, Any>? = call.argument(keyThumbnail)
+        val compress:Boolean = call.argument("compressThumbnail")?:true
+        return thumbnailMap?.run {
+            val thumbnailImage = WeChatFile.createWeChatFile(thumbnailMap, assetFileDescriptor)
+            val thumbnailImageIO = ImagesIOIml(thumbnailImage)
+            if(compress){
+                compressThumbnail(thumbnailImageIO, length)
+            }else{
+                thumbnailImageIO.readByteArray()
+            }
         }
     }
 
