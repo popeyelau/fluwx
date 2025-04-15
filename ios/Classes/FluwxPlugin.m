@@ -85,6 +85,12 @@ NSObject <FlutterPluginRegistrar> *_fluwxRegistrar;
         NSUserActivity *userActivity = (NSUserActivity*) [notification object];
         [WXApi handleOpenUniversalLink:userActivity delegate:self];
     }
+    if (@available(iOS 13.0, *)) {
+        if([notification.object isKindOfClass:[UIOpenURLContext class]]) {
+            UIOpenURLContext *context = (UIOpenURLContext*) [notification object];
+            [WXApi handleOpenURL:context.URL delegate:self];
+        }
+    }
 }
 
 - (instancetype)initWithChannel:(FlutterMethodChannel *)channel {
