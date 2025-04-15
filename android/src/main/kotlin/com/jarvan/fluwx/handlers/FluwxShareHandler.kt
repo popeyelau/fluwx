@@ -47,7 +47,7 @@ internal interface FluwxShareHandler : CoroutineScope {
         const val SHARE_IMAGE_THUMB_LENGTH = 32 * 1024
         const val SHARE_MINI_PROGRAM_THUMB_LENGTH = 120 * 1024
         private const val keyTitle = "title"
-        private const val keyThumbnail = "thumbnail"
+        private const val keyThumbnail = "thumbData"
         private const val keyDescription = "description"
     }
 
@@ -95,6 +95,7 @@ internal interface FluwxShareHandler : CoroutineScope {
 
         launch {
             val req = SendMessageToWX.Req()
+            msg.thumbData = readThumbnailByteArray(call, length = SHARE_MINI_PROGRAM_THUMB_LENGTH)
             setCommonArguments(call, req, msg)
             req.message = msg
             sendRequestInMain(result, req)
@@ -156,6 +157,7 @@ internal interface FluwxShareHandler : CoroutineScope {
             msg.description = call.argument(keyDescription)
 
             val req = SendMessageToWX.Req()
+            msg.thumbData = readThumbnailByteArray(call)
             setCommonArguments(call, req, msg)
             req.message = msg
 
@@ -181,6 +183,7 @@ internal interface FluwxShareHandler : CoroutineScope {
 
         launch {
             val req = SendMessageToWX.Req()
+            msg.thumbData = readThumbnailByteArray(call)
             setCommonArguments(call, req, msg)
             req.message = msg
             sendRequestInMain(result, req)
@@ -202,6 +205,7 @@ internal interface FluwxShareHandler : CoroutineScope {
 
         launch {
             val req = SendMessageToWX.Req()
+            msg.thumbData = readThumbnailByteArray(call)
             setCommonArguments(call, req, msg)
             req.message = msg
 
@@ -219,6 +223,7 @@ internal interface FluwxShareHandler : CoroutineScope {
 
         launch {
             val req = SendMessageToWX.Req()
+            msg.thumbData = readThumbnailByteArray(call)
             setCommonArguments(call, req, msg)
             req.message = msg
             sendRequestInMain(result, req)
@@ -260,9 +265,25 @@ internal interface FluwxShareHandler : CoroutineScope {
             }
 
             val req = SendMessageToWX.Req()
+            msg.thumbData = readThumbnailByteArray(call)
             setCommonArguments(call, req, msg)
             req.message = msg
             sendRequestInMain(result, req)
+        }
+    }
+
+    private suspend fun readThumbnailByteArray(call: MethodCall, length: Int = SHARE_IMAGE_THUMB_LENGTH): ByteArray? {
+        val thumbnailData: ByteArray? = call.argument(keyThumbnail)
+        val compress:Boolean = call.argument("compressThumbnail")?:true
+        return thumbnailData?.run {
+            val thumbnailMap = mapOf("schema" to 3, "source" to thumbnailData)
+            val thumbnailImage =  WeChatFile.createWeChatFile(thumbnailMap, assetFileDescriptor)
+            val thumbnailImageIO = ImagesIOIml(thumbnailImage)
+            if(compress){
+                compressThumbnail(thumbnailImageIO, length)
+            }else{
+                thumbnailImageIO.readByteArray()
+            }
         }
     }
 
@@ -284,9 +305,9 @@ internal interface FluwxShareHandler : CoroutineScope {
         call.argument<String?>("msgSignature")?.let {
             msg.msgSignature = it
         }
-        call.argument<ByteArray?>("thumbData")?.let {
-            msg.thumbData = it
-        }
+//        call.argument<ByteArray?>("thumbData")?.let {
+//            msg.thumbData = it
+//        }
 
         call.argument<String?>("thumbDataHash")?.let {
             msg.thumbDataHash = it
